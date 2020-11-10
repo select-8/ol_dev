@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
+    <style>
+      .map {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+    <script src="https://openlayers.org/en/v4.6.5/build/ol.js" type="text/javascript"></script>
+    <title>OpenLayers example</title>
+  </head>
+  <body>
+    <h2>My Map</h2>
+    <div id="map" class="map"></div>
+    <script type="text/javascript">
+      var map = new ol.Map({
+        target: 'map',
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.OSM()
+          })
+        ],
+        view: new ol.View({
+          center: ol.proj.fromLonLat([-8.65734894,52.65236271]),
+          zoom: 13
+        })
+      });
+
+      var geoJson = JSON.stringify({
+            'type': 'Feature',
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': [
+                    [-965068.9613156476, 6917903.9768694835], [-963761.0112796988, 6918876.101896202],
+                    [-962187.936236463, 6919883.576923893], [-960915.3362014858, 6920608.25194381],
+                    [-959695.7611679661, 6920024.976927779], [-958264.0861286167, 6919176.576904461],
+                    [-957645.4611116138, 6918893.776896688], [-961533.9612184886, 6918116.076875313],
+                    [-964344.28629573, 6914528.051776697], [-965387.1113243919, 6915853.676813131]
+                ]
+            },
+            'properties': null
+          });
+
+      this.feature = (new ol.format.GeoJSON()).readFeature(geoJson, {
+        featureProjection: 'EPSG:3857',
+        dataProjection: 'EPSG:3857'
+      });
+
+      var layer = new ol.layer.Vector({
+        source: new ol.source.Vector({
+          features: [this.feature]
+        }),
+        map: map,
+        style: new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'black',
+            width: 5
+          })
+        }),
+        visible: true
+      });
+
+      var iconStyle = new ol.style.Style({
+        image: new ol.style.Icon({
+          anchor: [0.5, 46],
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          src: 'yah.png',
+        }),
+      });
+
+      var markers = [];
+      var geometry = this.feature.getGeometry();
+
+
+      var startCoord = geometry.getFirstCoordinate();
+      var endCoord = geometry.getLastCoordinate();
+      markers.push(startCoord, endCoord);
+
+      var features = [];
+
+
+      for (var i = 0; i < markers.length; i++) {
+          var marker = markers[i];
+
+          var iconFeature = new ol.Feature({
+              geometry: new ol.geom.Point(marker)
+          });
+
+          var iconStyle = new ol.style.Style({
+              image: new ol.style.Icon(({
+                  anchor: [0.5, 1],
+                  src: "http://cdn.mapmarker.io/api/v1/pin?text=P&size=50&hoffset=1"
+              }))
+          });
+
+          iconFeature.setStyle(iconStyle);
+          features.push(iconFeature);
+
+      }
+
+      var vectorSource = new ol.source.Vector({
+          features: features
+      });
+
+      var vectorLayer = new ol.layer.Vector({
+          source: vectorSource
+      });
+      map.addLayer(vectorLayer);
+
+
+    </script>
+  </body>
+</html>
